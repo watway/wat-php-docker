@@ -1,0 +1,39 @@
+version: '3'
+services:
+    web:
+        image: nginx:latest
+        ports:
+            - "8081:80"
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+            - ./app:/app
+        links:
+            - php
+
+    php:
+        build:
+            context: .
+            dockerfile: PHP.Dockerfile
+        volumes:
+            - ./app:/app
+        links:
+            - mysql
+        environment:
+          #V2 XDEBUG_CONFIG: remote_host=host.docker.internal remote_port=9003 remote_enable=1
+          XDEBUG_MODE: debug
+          XDEBUG_SESSION: VSCODE
+          XDEBUG_CONFIG: client_host=host.docker.internal client_port=9003 start_with_request=yes
+
+    mysql:
+        image: mariadb:latest
+        environment:
+            MYSQL_ROOT_PASSWORD: 'secret'
+            MYSQL_USER: 'tutorial'
+            MYSQL_PASSWORD: 'secret'
+            MYSQL_DATABASE: 'tutorial'
+        volumes:
+            - mysqldata:/var/lib/mysql
+        ports:
+            - 3306:3306
+volumes:
+    mysqldata: {}
